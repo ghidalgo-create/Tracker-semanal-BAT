@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard de Campañas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --otras-main:#5b7fa6; --otras-card:#e4eaf3; --otras-dates:#ccd5e3;
+    --eclipse-main:#e85d45; --eclipse-card:#fde8e4; --eclipse-dates:#fcd6d0;
+    --velo-main:#3ab4e0; --velo-card:#daf0fb; --velo-dates:#b8e3f5;
+    --vuse-main:#7c4fcc; --vuse-card:#ede4fc; --vuse-dates:#d9c8f7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    background:#f0f0f0;
+    padding:28px 20px 60px;
+    color:#2b2b2b;
+  }
+  h1{
+    text-align:center;
+    font-weight:900;
+    font-size:26px;
+    margin-bottom:6px;
+    color:#333;
+  }
+  .subtitle{
+    text-align:center;
+    color:#777;
+    font-size:13px;
+    margin-bottom:30px;
+  }
+  .campaign-block{
+    max-width:1180px;
+    margin:0 auto 34px;
+  }
+  .campaign-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .campaign-title{
+    font-weight:900;
+    font-size:19px;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+  }
+  .tab-btn{
+    border:2px solid var(--main);
+    background:transparent;
+    color:var(--main);
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:8px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--main);
+    color:#fff;
+  }
+  .cards-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    align-items:stretch;
+  }
+  .cat-card{
+    background:var(--card-bg);
+    border-radius:18px;
+    padding:16px 16px 14px;
+    flex:1 1 190px;
+    min-width:190px;
+    max-width:230px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  }
+  .cat-title{
+    font-weight:900;
+    font-size:13.5px;
+    color:var(--main);
+    text-align:center;
+    margin-bottom:2px;
+    line-height:1.2;
+  }
+  .cat-ref{
+    font-size:11.5px;
+    color:var(--main);
+    opacity:.85;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .donut-wrap{
+    position:relative;
+    width:100px;
+    height:100px;
+    margin-bottom:10px;
+  }
+  .donut-wrap canvas{
+    width:100px !important;
+    height:100px !important;
+  }
+  .donut-pct{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    font-weight:900;
+    color:#ffffff;
+    text-shadow:0 1px 2px rgba(0,0,0,0.15);
+    pointer-events:none;
+  }
+  .legend{
+    display:flex;
+    gap:12px;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--main);
+    margin-bottom:10px;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+  .legend-dot{
+    width:9px;height:9px;border-radius:50%;
+  }
+  .dot-pending{background:rgba(255,255,255,0.6); border:1px solid var(--main);}
+  .dot-completed{background:var(--main);}
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+    justify-content:center;
+  }
+  .chip{
+    background:rgba(255,255,255,0.55);
+    color:var(--main);
+    font-size:10px;
+    font-weight:700;
+    padding:4px 9px;
+    border-radius:999px;
+    line-height:1.2;
+    text-align:center;
+  }
+  .dates-card{
+    background:var(--dates-bg);
+    border-radius:18px;
+    width:145px;
+    min-width:145px;
+    flex:0 0 145px;
+    padding:16px 12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  }
+  .dates-label{
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--main);
+    opacity:.85;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+  }
+  .dates-value{
+    font-size:15px;
+    font-weight:900;
+    color:var(--main);
+  }
+  .view-panel{display:none;}
+  .view-panel.active{display:block;}
+</style>
+</head>
+<body>
+
+<h1>Dashboard de Campañas</h1>
+<div class="subtitle">Programación y efectividad de visitas por categoría de material POP</div>
+
+<div id="app"></div>
+
+<script>
+const DATA = [{"name": "PALL MALL NEWBC", "theme": "otras", "kickoff": "01/07/2026", "end": "15/08/2026", "categories": [{"key": "b2b", "label": "B2B Material", "total": 1334, "visit": 1318, "done": 1317, "materials": ["CARTILLA B2B"]}, {"key": "primary", "label": "Primary POP", "total": 1538, "visit": 233, "done": 159, "materials": ["PLACA DE CIGARRERA"]}, {"key": "secondary", "label": "Secondary POP", "total": 1084, "visit": 971, "done": 965, "materials": ["GLORIFICADOR PALL MALL", "JALAVISTA CAVA - GRATI", "JALAVISTA MONITOR", "STICKER MESON - GRATI", "TABLE TENT - GRATI", "VIBRIN - COMBOPACK"]}, {"key": "special", "label": "Special Implementations", "total": 44, "visit": 44, "done": 44, "materials": ["COLGANTE", "STICKER EEFF"]}]}, {"name": "CROSS JULIO", "theme": "otras", "kickoff": "01/07/2026", "end": "25/07/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 400, "visit": 371, "done": 371, "materials": ["TABLE TENT", "VIBRIN", "VIBRIN SIN PROMO"]}]}, {"name": "VUSE AROMATIC TOBACCO", "theme": "vuse", "kickoff": "01/07/2026", "end": "15/08/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 651, "visit": 428, "done": 423, "materials": ["FLAPS VUSE", "HEADER VUSE", "JALAVISTA MONITOR CON AROMATIC TOBACCO", "JALAVISTA MONITOR SIN AROMATIC TOBACCO", "REEL", "VIBRIN CON AROMATIC TOBACCO", "VIBRIN SIN AROMATIC TOBACCO"]}]}];
+
+const THEME_VARS = {
+  otras:   {main:'var(--otras-main)',  card:'var(--otras-card)',  dates:'var(--otras-dates)'},
+  eclipse: {main:'var(--eclipse-main)',card:'var(--eclipse-card)',dates:'var(--eclipse-dates)'},
+  velo:    {main:'var(--velo-main)',   card:'var(--velo-card)',   dates:'var(--velo-dates)'},
+  vuse:    {main:'var(--vuse-main)',   card:'var(--vuse-card)',   dates:'var(--vuse-dates)'}
+};
+
+const THEME_HEX = {
+  otras:'#5b7fa6', eclipse:'#e85d45', velo:'#3ab4e0', vuse:'#7c4fcc'
+};
+
+const VIEWS = [
+  {key:'programacion', label:'Programación de visitas'},
+  {key:'efectividad',  label:'Efectividad de visitas'}
+];
+
+function pct(view, cat){
+  if(view === 'programacion'){
+    if(!cat.total) return 0;
+    return Math.round(cat.visit / cat.total * 100);
+  } else {
+    if(!cat.visit) return 0;
+    return Math.round(cat.done / cat.visit * 100);
+  }
+}
+
+function refValue(view, cat){
+  return view === 'programacion' ? cat.total : cat.visit;
+}
+
+const app = document.getElementById('app');
+let chartRegistry = [];
+
+DATA.forEach((camp, ci) => {
+  const theme = THEME_VARS[camp.theme];
+  const block = document.createElement('div');
+  block.className = 'campaign-block';
+  block.style.setProperty('--main', theme.main);
+
+  const header = document.createElement('div');
+  header.className = 'campaign-header';
+  header.innerHTML = `
+    <div class="campaign-title" style="color:${theme.main}">${camp.name}</div>
+    <div class="tabs" id="tabs-${ci}"></div>
+  `;
+  block.appendChild(header);
+
+  const tabsEl = header.querySelector(`#tabs-${ci}`);
+  VIEWS.forEach((v, vi) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (vi === 0 ? ' active' : '');
+    btn.textContent = v.label;
+    btn.onclick = () => switchView(ci, v.key);
+    tabsEl.appendChild(btn);
+  });
+
+  VIEWS.forEach((v, vi) => {
+    const panel = document.createElement('div');
+    panel.className = 'view-panel' + (vi === 0 ? ' active' : '');
+    panel.id = `panel-${ci}-${v.key}`;
+
+    const row = document.createElement('div');
+    row.className = 'cards-row';
+
+    camp.categories.forEach((cat, cati) => {
+      const card = document.createElement('div');
+      card.className = 'cat-card';
+      card.style.setProperty('--card-bg', theme.card);
+      card.style.setProperty('--main', theme.main);
+
+      const p = pct(v.key, cat);
+      const ref = refValue(v.key, cat);
+      const canvasId = `chart-${ci}-${v.key}-${cati}`;
+
+      card.innerHTML = `
+        <div class="cat-title">${cat.label}</div>
+        <div class="cat-ref">${ref} POS</div>
+        <div class="donut-wrap">
+          <canvas id="${canvasId}" width="100" height="100"></canvas>
+          <div class="donut-pct">${p}%</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot dot-pending"></span>Pending</div>
+          <div class="legend-item"><span class="legend-dot dot-completed"></span>Completed</div>
+        </div>
+        <div class="chips">
+          ${cat.materials.map(m => `<span class="chip">${m}</span>`).join('')}
+        </div>
+      `;
+      row.appendChild(card);
+    });
+
+    // Dates card only on last panel? spec says "al final" of each view's row -> include in both views
+    const datesCard = document.createElement('div');
+    datesCard.className = 'dates-card';
+    datesCard.style.setProperty('--dates-bg', theme.dates);
+    datesCard.style.setProperty('--main', theme.main);
+    datesCard.innerHTML = `
+      <div>
+        <div class="dates-label">Kick off</div>
+        <div class="dates-value">${camp.kickoff || '-'}</div>
+      </div>
+      <div>
+        <div class="dates-label">Projected end date</div>
+        <div class="dates-value">${camp.end || '-'}</div>
+      </div>
+    `;
+    row.appendChild(datesCard);
+
+    panel.appendChild(row);
+    block.appendChild(panel);
+  });
+
+  app.appendChild(block);
+});
+
+function switchView(ci, viewKey){
+  VIEWS.forEach(v => {
+    const panel = document.getElementById(`panel-${ci}-${v.key}`);
+    panel.classList.toggle('active', v.key === viewKey);
+  });
+  const tabsEl = document.getElementById(`tabs-${ci}`);
+  Array.from(tabsEl.children).forEach((btn, idx) => {
+    btn.classList.toggle('active', VIEWS[idx].key === viewKey);
+  });
+  // (re)render charts for the newly active panel
+  renderChartsForPanel(ci, viewKey);
+}
+
+function renderChartsForPanel(ci, viewKey){
+  const camp = DATA[ci];
+  const mainHex = THEME_HEX[camp.theme];
+  camp.categories.forEach((cat, cati) => {
+    const canvasId = `chart-${ci}-${viewKey}-${cati}`;
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    if(canvas._chartInstance){
+      canvas._chartInstance.destroy();
+    }
+    const p = pct(viewKey, cat);
+    const ctx = canvas.getContext('2d');
+    canvas._chartInstance = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:['Completed','Pending'],
+        datasets:[{
+          data:[p, 100 - p],
+          backgroundColor:['rgba(255,255,255,0.92)','rgba(255,255,255,0.25)'],
+          borderWidth:0
+        }]
+      },
+      options:{
+        responsive:false,
+        cutout:'72%',
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} }
+      }
+    });
+  });
+}
+
+// initial render: first view of each campaign
+DATA.forEach((camp, ci) => renderChartsForPanel(ci, VIEWS[0].key));
+</script>
+</body>
+</html>
