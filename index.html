@@ -197,7 +197,7 @@
 <div id="app"></div>
 
 <script>
-const DATA = [{"name": "PALL MALL NEWBC", "theme": "otras", "kickoff": "01/07/2026", "end": "15/08/2026", "categories": [{"key": "b2b", "label": "B2B Material", "total": 1334, "visit": 1318, "done": 1317, "materials": ["CARTILLA B2B"]}, {"key": "primary", "label": "Primary POP", "total": 1538, "visit": 233, "done": 159, "materials": ["PLACA DE CIGARRERA"]}, {"key": "secondary", "label": "Secondary POP", "total": 1084, "visit": 971, "done": 965, "materials": ["GLORIFICADOR PALL MALL", "JALAVISTA CAVA - GRATI", "JALAVISTA MONITOR", "STICKER MESON - GRATI", "TABLE TENT - GRATI", "VIBRIN - COMBOPACK"]}, {"key": "special", "label": "Special Implementations", "total": 44, "visit": 44, "done": 44, "materials": ["COLGANTE", "STICKER EEFF"]}]}, {"name": "CROSS JULIO", "theme": "otras", "kickoff": "01/07/2026", "end": "25/07/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 400, "visit": 371, "done": 371, "materials": ["TABLE TENT", "VIBRIN", "VIBRIN SIN PROMO"]}]}, {"name": "VUSE AROMATIC TOBACCO", "theme": "vuse", "kickoff": "01/07/2026", "end": "15/08/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 651, "visit": 428, "done": 423, "materials": ["FLAPS VUSE", "HEADER VUSE", "JALAVISTA MONITOR CON AROMATIC TOBACCO", "JALAVISTA MONITOR SIN AROMATIC TOBACCO", "REEL", "VIBRIN CON AROMATIC TOBACCO", "VIBRIN SIN AROMATIC TOBACCO"]}]}];
+const DATA = [{"name": "PALL MALL NEWBC", "theme": "otras", "kickoff": "01/07/2026", "end": "26/08/2026", "categories": [{"key": "b2b", "label": "B2B Material", "total": 1334, "visit": 1334, "done": 1332, "materials": ["CARTILLA B2B"]}, {"key": "primary", "label": "Primary POP", "total": 1094, "visit": 868, "done": 530, "materials": ["GLORIFICADOR PALL MALL", "PLACA DE CIGARRERA"]}, {"key": "secondary", "label": "Secondary POP", "total": 1245, "visit": 733, "done": 733, "materials": ["GLORIFICADOR PALL MALL", "JALAVISTA CAVA - AGOSTO", "JALAVISTA CAVA - GRATI", "JALAVISTA MONITOR", "JALAVISTA MONITOR- AGOSTO", "PLACA DE CIGARRERA", "STICKER MESON - AGOSTO", "TABLE TENT - AGOSTO", "TABLE TENT - GRATI"]}, {"key": "special", "label": "Special Implementations", "total": 44, "visit": 44, "done": 44, "materials": ["COLGANTE", "STICKER EEFF"]}]}, {"name": "CROSS JULIO", "theme": "otras", "kickoff": "01/07/2026", "end": "25/07/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 400, "visit": 399, "done": 376, "materials": ["TABLE TENT", "VIBRIN", "VIBRIN SIN PROMO"]}]}, {"name": "VUSE AROMATIC TOBACCO", "theme": "vuse", "kickoff": "01/07/2026", "end": "25/08/2026", "categories": [{"key": "secondary", "label": "Secondary POP", "total": 1533, "visit": 1014, "done": 998, "materials": ["CENEFA - AGOSTO", "FLAPS VUSE AROMATIC", "FLAPS VUSE SIN AROMATIC", "HEADER VUSE", "JALAVISTA MONITOR CON AROMATIC TOBACCO", "JALAVISTA MONITOR SIN AROMATIC TOBACCO", "REEL", "VIBRIN CON AROMATIC TOBACCO", "VIBRIN SIN AROMATIC TOBACCO"]}]}, {"name": "EXPANSIÓN VELO TAMBO", "theme": "velo", "kickoff": "20/07/2026", "end": "21/08/2026", "categories": [{"key": "primary", "label": "Primary POP", "total": 136, "visit": 136, "done": 127, "materials": ["PLACA VELO"]}, {"key": "secondary", "label": "Secondary POP", "total": 136, "visit": 136, "done": 135, "materials": ["DISPENSER VELO/VUSE"]}]}];
 
 const THEME_VARS = {
   otras:   {main:'var(--otras-main)',  card:'var(--otras-card)',  dates:'var(--otras-dates)'},
@@ -230,7 +230,6 @@ function refValue(view, cat){
 }
 
 const app = document.getElementById('app');
-let chartRegistry = [];
 
 DATA.forEach((camp, ci) => {
   const theme = THEME_VARS[camp.theme];
@@ -291,7 +290,6 @@ DATA.forEach((camp, ci) => {
       row.appendChild(card);
     });
 
-    // Dates card only on last panel? spec says "al final" of each view's row -> include in both views
     const datesCard = document.createElement('div');
     datesCard.className = 'dates-card';
     datesCard.style.setProperty('--dates-bg', theme.dates);
@@ -324,13 +322,11 @@ function switchView(ci, viewKey){
   Array.from(tabsEl.children).forEach((btn, idx) => {
     btn.classList.toggle('active', VIEWS[idx].key === viewKey);
   });
-  // (re)render charts for the newly active panel
   renderChartsForPanel(ci, viewKey);
 }
 
 function renderChartsForPanel(ci, viewKey){
   const camp = DATA[ci];
-  const mainHex = THEME_HEX[camp.theme];
   camp.categories.forEach((cat, cati) => {
     const canvasId = `chart-${ci}-${viewKey}-${cati}`;
     const canvas = document.getElementById(canvasId);
@@ -359,7 +355,6 @@ function renderChartsForPanel(ci, viewKey){
   });
 }
 
-// initial render: first view of each campaign
 DATA.forEach((camp, ci) => renderChartsForPanel(ci, VIEWS[0].key));
 </script>
 </body>
